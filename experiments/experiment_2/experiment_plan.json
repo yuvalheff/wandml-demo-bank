@@ -1,0 +1,129 @@
+{
+  "experiment_name": "Gradient Boosting with Threshold Optimization for Class Imbalance",
+  "iteration_number": 2,
+  "primary_change": "Implement precision-recall threshold optimization to improve positive class recall from 47.1% to target 70%+",
+  "experiment_objective": "Address the main limitation from Experiment 1: improve recall for positive class (term deposit subscriptions) while maintaining strong ROC-AUC performance through systematic threshold optimization",
+  
+  "preprocessing_steps": {
+    "categorical_encoding": "Apply LabelEncoder to categorical columns V2, V3, V4, V5, V7, V8, V9, V11, V16 (convert to string first for consistency)",
+    "special_value_handling": [
+      "Create binary feature V14_is_missing for V14 == -1.0 values",
+      "Create binary feature V15_is_zero for V15 == 0.0 values"
+    ],
+    "outlier_treatment": "Apply np.clip to V6 column with bounds (-1000, 10000) to handle extreme outliers",
+    "feature_scaling": "No scaling required for Gradient Boosting algorithm",
+    "data_splitting": "Use existing train/test split (maintain 90/10 stratified ratio)"
+  },
+  
+  "feature_engineering_steps": {
+    "engineered_features": [
+      "V14_is_missing: Binary indicator for missing values encoded as -1.0",
+      "V15_is_zero: Binary indicator for zero values in V15"
+    ],
+    "feature_selection": "Use all original features (V1-V16) plus 2 engineered binary features",
+    "interaction_terms": "Not implemented in this iteration to maintain focus on threshold optimization",
+    "total_features": "18 features (16 original + 2 engineered)"
+  },
+  
+  "model_selection_steps": {
+    "algorithm": "GradientBoostingClassifier",
+    "hyperparameters": {
+      "learning_rate": 0.1,
+      "max_depth": 5,
+      "n_estimators": 200,
+      "random_state": 42,
+      "subsample": 1.0,
+      "max_features": null
+    },
+    "hyperparameter_optimization": "5-fold stratified cross-validation with ROC-AUC scoring",
+    "validation_strategy": "Stratified K-Fold cross-validation (k=5) to maintain class distribution"
+  },
+  
+  "threshold_optimization": {
+    "method": "Precision-Recall curve analysis to find F1-optimal threshold",
+    "approach": "Generate precision-recall curve using predict_proba outputs, compute F1 scores for all thresholds, select threshold maximizing F1 score",
+    "evaluation_thresholds": [0.5, "f1_optimal", 0.3, 0.2],
+    "target_metrics": {
+      "recall_target": "≥70% for positive class",
+      "precision_minimum": "≥50% for positive class",
+      "roc_auc_maintenance": "≥0.93"
+    }
+  },
+  
+  "evaluation_strategy": {
+    "primary_metric": "ROC-AUC",
+    "secondary_metrics": [
+      "Average Precision (AP)",
+      "F1-Score for positive class",
+      "Precision for positive class", 
+      "Recall for positive class",
+      "Brier Score",
+      "Overall Accuracy"
+    ],
+    "diagnostic_analyses": [
+      {
+        "analysis_name": "Threshold Performance Analysis",
+        "description": "Evaluate model performance across multiple thresholds to understand precision-recall tradeoffs",
+        "plot": "threshold_analysis.html"
+      },
+      {
+        "analysis_name": "Precision-Recall Curve Detailed",
+        "description": "Enhanced PR curve showing optimal threshold selection and business impact zones",
+        "plot": "precision_recall_detailed.html"
+      },
+      {
+        "analysis_name": "Confusion Matrix at Multiple Thresholds",
+        "description": "Side-by-side confusion matrices at default (0.5), optimal F1, and high-recall thresholds",
+        "plot": "confusion_matrix_comparison.html"
+      },
+      {
+        "analysis_name": "Feature Importance Validation",
+        "description": "Confirm V12 remains the top predictor and validate feature ranking stability",
+        "plot": "feature_importance_validation.html"
+      },
+      {
+        "analysis_name": "Class Probability Distribution",
+        "description": "Analyze predicted probability distributions by true class to inform threshold selection",
+        "plot": "probability_distribution_analysis.html"
+      },
+      {
+        "analysis_name": "Business Impact Analysis",
+        "description": "Translate threshold choices into business metrics: campaign size, hit rate, potential revenue",
+        "plot": "business_impact_analysis.html"
+      },
+      {
+        "analysis_name": "Model Calibration Assessment", 
+        "description": "Evaluate probability calibration quality for reliable business decision-making",
+        "plot": "calibration_assessment.html"
+      }
+    ]
+  },
+  
+  "expected_performance": {
+    "roc_auc": "≥0.93 (maintain previous performance)",
+    "positive_class_recall": "70-75% (significant improvement from 47.1%)",
+    "positive_class_precision": "50-60% (acceptable tradeoff for higher recall)",
+    "f1_score": "0.65-0.70 (improvement from 0.55)"
+  },
+  
+  "success_criteria": {
+    "primary": "Achieve ≥70% recall for positive class while maintaining ROC-AUC ≥0.93",
+    "secondary": "F1-score improvement to ≥0.65",
+    "business_impact": "Enable identification of 70%+ of potential subscribers vs 47% in previous experiment"
+  },
+  
+  "implementation_notes": {
+    "focus_change": "Single iteration focus on threshold optimization - no other model changes",
+    "code_structure": "Extend previous experiment code with threshold optimization pipeline",
+    "mlflow_integration": "Log multiple threshold results and optimal threshold as model metadata",
+    "production_readiness": "Include threshold as configurable parameter for deployment"
+  },
+  
+  "column_specifications": {
+    "target_column": "target",
+    "numerical_columns": ["V1", "V6", "V10", "V12", "V13", "V14", "V15"],
+    "categorical_columns": ["V2", "V3", "V4", "V5", "V7", "V8", "V9", "V11", "V16"],
+    "engineered_columns": ["V14_is_missing", "V15_is_zero"],
+    "outlier_columns": ["V6"]
+  }
+}

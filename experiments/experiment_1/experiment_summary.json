@@ -1,0 +1,78 @@
+{
+  "experiment_name": "Gradient Boosting Baseline with Optimized Preprocessing",
+  "experiment_id": 1,
+  "timestamp": "2025-09-07T17:19:46.024189Z",
+  "status": "completed",
+  "primary_metric": {
+    "name": "roc_auc",
+    "value": 0.935,
+    "target": 0.935,
+    "achieved": true
+  },
+  "all_metrics": {
+    "roc_auc": 0.935,
+    "average_precision": 0.733,
+    "brier_score": 0.062,
+    "accuracy": 0.910,
+    "precision_class_2": 0.660,
+    "recall_class_2": 0.471,
+    "f1_score_class_2": 0.550
+  },
+  "model_config": {
+    "algorithm": "GradientBoostingClassifier",
+    "hyperparameters": {
+      "learning_rate": 0.1,
+      "max_depth": 5,
+      "min_samples_split": 10,
+      "n_estimators": 200
+    },
+    "cross_validation": "5-fold stratified CV",
+    "features_processed": 44
+  },
+  "dataset_info": {
+    "total_samples": 4522,
+    "positive_samples": 529,
+    "negative_samples": 3993,
+    "class_balance_ratio": 0.117
+  },
+  "key_strengths": [
+    "Met performance target with ROC-AUC of 0.935",
+    "Robust hyperparameter optimization achieved optimal configuration",
+    "Comprehensive evaluation with 7 diagnostic plots generated",
+    "Complete MLflow pipeline created for deployment readiness"
+  ],
+  "main_weaknesses": [
+    "Class imbalance issues with recall for positive class at 47.07%",
+    "Precision-recall performance shows room for improvement despite high ROC-AUC",
+    "Limited feature engineering may miss interaction effects and advanced relationships"
+  ],
+  "future_suggestions": [
+    "Implement class imbalance techniques (SMOTE, class weighting, threshold optimization)",
+    "Develop advanced feature engineering with interactions and domain-specific features",
+    "Explore ensemble methods for enhanced performance",
+    "Optimize prediction threshold for specific business requirements"
+  ],
+  "artifacts": {
+    "model_files": [
+      "data_processor.pkl",
+      "feature_processor.pkl", 
+      "trained_model.pkl",
+      "mlflow_model/"
+    ],
+    "plots": [
+      "roc_curve.html",
+      "precision_recall_curve.html",
+      "confusion_matrix.html",
+      "calibration_curve.html",
+      "feature_importance.html",
+      "prediction_distribution.html",
+      "threshold_analysis.html"
+    ]
+  },
+  "context_for_next_iteration": {
+    "baseline_established": "Strong ROC-AUC baseline of 0.935",
+    "main_opportunities": "Minority class detection improvement and advanced feature engineering",
+    "technical_foundation": "Solid preprocessing pipeline ready for enhancement",
+    "business_context": "Model reliably identifies high-probability targets but may miss ~53% of potential subscribers"
+  }
+}

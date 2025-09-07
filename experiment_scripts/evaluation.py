@@ -349,3 +349,80 @@ class ModelEvaluator:
         filepath = os.path.join(self.plots_dir, "threshold_analysis.html")
         fig.write_html(filepath, include_plotlyjs=True, config={'responsive': True, 'displayModeBar': False})
         return filepath
+    
+    def find_optimal_threshold(self, y_true, y_pred_proba, metric='f1'):
+        """
+        Find optimal threshold for classification based on specified metric.
+        
+        Parameters:
+        y_true: True labels
+        y_pred_proba: Predicted probabilities
+        metric: Metric to optimize ('f1', 'precision', 'recall', 'youden')
+        
+        Returns:
+        Dict containing optimal threshold and corresponding metrics
+        """
+        precision, recall, thresholds = precision_recall_curve(y_true, y_pred_proba, pos_label=2)
+        
+        if metric == 'f1':
+            # Calculate F1 scores
+            f1_scores = 2 * (precision * recall) / (precision + recall)
+            f1_scores = np.nan_to_num(f1_scores)
+            
+            # Find optimal threshold
+            optimal_idx = np.argmax(f1_scores)
+            optimal_threshold = thresholds[min(optimal_idx, len(thresholds)-1)]
+            
+            result = {
+                'threshold': optimal_threshold,
+                'precision': precision[optimal_idx],
+                'recall': recall[optimal_idx],
+                'f1_score': f1_scores[optimal_idx]
+            }
+            
+        elif metric == 'youden':
+            # Youden's J statistic (sensitivity + specificity - 1)
+            from sklearn.metrics import roc_curve
+            fpr, tpr, roc_thresholds = roc_curve(y_true, y_pred_proba, pos_label=2)
+            youden_scores = tpr - fpr
+            optimal_idx = np.argmax(youden_scores)
+            optimal_threshold = roc_thresholds[optimal_idx]
+            
+            result = {
+                'threshold': optimal_threshold,
+                'tpr': tpr[optimal_idx],
+                'fpr': fpr[optimal_idx],
+                'youden_j': youden_scores[optimal_idx]
+            }
+        
+        return result
+    
+    def evaluate_at_thresholds(self, y_true, y_pred_proba, thresholds):
+        """
+        Evaluate model performance at multiple thresholds.
+        
+        Parameters:
+        y_true: True labels
+        y_pred_proba: Predicted probabilities  
+        thresholds: List of thresholds to evaluate
+        
+        Returns:
+        Dict containing metrics for each threshold
+        """
+        from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+        
+        results = {}
+        
+        for threshold in thresholds:
+            y_pred_thresh = (y_pred_proba >= threshold).astype(int)
+            # Convert predictions to match target labels (1/2 instead of 0/1)
+            y_pred_thresh = y_pred_thresh + 1
+            
+            results[threshold] = {
+                'precision': precision_score(y_true, y_pred_thresh, pos_label=2, zero_division=0),
+                'recall': recall_score(y_true, y_pred_thresh, pos_label=2, zero_division=0),
+                'f1_score': f1_score(y_true, y_pred_thresh, pos_label=2, zero_division=0),
+                'accuracy': accuracy_score(y_true, y_pred_thresh)
+            }
+        
+        return results

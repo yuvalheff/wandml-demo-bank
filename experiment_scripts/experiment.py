@@ -69,10 +69,7 @@ class Experiment:
         data_processor.fit(X_train)
         
         # Feature preprocessing  
-        feature_processor = FeatureProcessor(
-            self._config.feature_prep,
-            self._config.data_prep.categorical_columns
-        )
+        feature_processor = FeatureProcessor(self._config.feature_prep)
         X_train_data_processed = data_processor.transform(X_train)
         feature_processor.fit(X_train_data_processed)
         
@@ -105,6 +102,38 @@ class Experiment:
         primary_metric_value = evaluation_results[self._config.model_evaluation.primary_metric]
         print(f"✅ Model evaluation complete. {self._config.model_evaluation.primary_metric.upper()}: {primary_metric_value:.4f}")
         
+        # Threshold optimization as per experiment plan
+        if self._config.model_evaluation.threshold_optimization:
+            print("🔄 Performing threshold optimization...")
+            
+            # Get probabilities for threshold optimization
+            y_test_proba = model.predict_proba(X_test_processed)[:, 1]
+            
+            # Find optimal threshold based on F1 score
+            optimal_threshold_info = evaluator.find_optimal_threshold(
+                y_test, y_test_proba, metric=self._config.model_evaluation.threshold_metric
+            )
+            
+            # Evaluate at multiple thresholds including optimal
+            thresholds_to_test = self._config.model_evaluation.thresholds_to_evaluate + [optimal_threshold_info['threshold']]
+            threshold_results = evaluator.evaluate_at_thresholds(y_test, y_test_proba, thresholds_to_test)
+            
+            # Add threshold optimization results to evaluation
+            evaluation_results['threshold_optimization'] = {
+                'optimal_threshold': optimal_threshold_info,
+                'threshold_performance': threshold_results,
+                'default_threshold_performance': threshold_results[0.5] if 0.5 in threshold_results else None
+            }
+            
+            print(f"✅ Optimal F1 threshold: {optimal_threshold_info['threshold']:.3f}")
+            print(f"   - Precision: {optimal_threshold_info['precision']:.3f}")
+            print(f"   - Recall: {optimal_threshold_info['recall']:.3f}")  
+            print(f"   - F1-Score: {optimal_threshold_info['f1_score']:.3f}")
+            
+            # Update primary metric value to include threshold optimization insight
+            optimal_f1 = optimal_threshold_info['f1_score']
+            evaluation_results['optimal_f1_score'] = float(optimal_f1)
+        
         # Save individual artifacts
         print("🔄 Saving model artifacts...")
         data_processor.save(os.path.join(model_artifacts_dir, "data_processor.pkl"))
@@ -131,7 +160,7 @@ class Experiment:
         # Save and log MLflow model
         print("🔄 Saving MLflow model...")
         mlflow_model_dir = os.path.join(model_artifacts_dir, "mlflow_model")
-        relative_model_path = "model_artifacts/mlflow_model/"
+        relative_model_path = "output/model_artifacts/mlflow_model/"
         
         # Create sample for signature
         signature = infer_signature(sample_input, sample_predictions)
@@ -146,7 +175,7 @@ class Experiment:
         )
         
         # 2. Log to active MLflow run if available
-        active_run_id = "c74be0beb1ea43b5bbb31bc9f60e78c4"
+        active_run_id = "d812a8c4475e48269f62f181ff71308a"
         logged_model_uri = None
         
         if active_run_id and active_run_id != 'None' and active_run_id.strip():
@@ -187,7 +216,7 @@ class Experiment:
                 "mlflow_model/"
             ],
             "mlflow_model_info": {
-                "model_path": "model_artifacts/mlflow_model/",
+                "model_path": "output/model_artifacts/mlflow_model/",
                 "logged_model_uri": logged_model_uri,
                 "model_type": "sklearn",
                 "task_type": "classification",

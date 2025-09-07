@@ -15,7 +15,7 @@ class DataConfig:
     categorical_columns: List[str]
     numerical_columns: List[str]
     v14_missing_threshold: float
-    v6_outlier_percentiles: Dict[str, float]
+    v6_outlier_bounds: Dict[str, float]
 
 
 @dataclass
@@ -23,6 +23,7 @@ class FeaturesConfig:
     encoding_method: str
     drop_first: bool
     handle_unknown: str
+    binary_features: List[str]
 
 
 @dataclass
@@ -30,6 +31,9 @@ class ModelEvalConfig:
     cv_folds: int
     primary_metric: str
     random_state: int
+    threshold_optimization: bool
+    threshold_metric: str
+    thresholds_to_evaluate: List[float]
 
 
 @dataclass

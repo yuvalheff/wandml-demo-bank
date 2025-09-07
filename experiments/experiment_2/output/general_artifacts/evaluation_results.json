@@ -1,0 +1,96 @@
+{
+  "primary_metric": "roc_auc",
+  "roc_auc": 0.9322117107584776,
+  "average_precision": 0.7334479626083535,
+  "brier_score": 0.06348898707738143,
+  "classification_report": {
+    "1": {
+      "precision": 0.928074802205706,
+      "recall": 0.9694465314300025,
+      "f1-score": 0.9483096521313081,
+      "support": 3993.0
+    },
+    "2": {
+      "precision": 0.6524216524216524,
+      "recall": 0.43289224952741023,
+      "f1-score": 0.5204545454545455,
+      "support": 529.0
+    },
+    "accuracy": 0.9066784608580274,
+    "macro avg": {
+      "precision": 0.7902482273136793,
+      "recall": 0.7011693904787064,
+      "f1-score": 0.7343820987929268,
+      "support": 4522.0
+    },
+    "weighted avg": {
+      "precision": 0.8958278945905436,
+      "recall": 0.9066784608580274,
+      "f1-score": 0.8982576062595683,
+      "support": 4522.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      3871,
+      122
+    ],
+    [
+      300,
+      229
+    ]
+  ],
+  "plot_paths": {
+    "roc_curve": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_2/plots/roc_curve.html",
+    "precision_recall": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_2/plots/precision_recall_curve.html",
+    "confusion_matrix": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_2/plots/confusion_matrix.html",
+    "calibration": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_2/plots/calibration_curve.html",
+    "feature_importance": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_2/plots/feature_importance.html",
+    "prediction_distribution": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_2/plots/prediction_distribution.html",
+    "threshold_analysis": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_2/plots/threshold_analysis.html"
+  },
+  "total_samples": 4522,
+  "positive_samples": 529,
+  "negative_samples": 3993,
+  "threshold_optimization": {
+    "optimal_threshold": {
+      "threshold": 0.23477850669621972,
+      "precision": 0.5403556771545828,
+      "recall": 0.7466918714555766,
+      "f1_score": 0.626984126984127
+    },
+    "threshold_performance": {
+      "0.2": {
+        "precision": 0.5131086142322098,
+        "recall": 0.776937618147448,
+        "f1_score": 0.6180451127819548,
+        "accuracy": 0.8876603272888103
+      },
+      "0.3": {
+        "precision": 0.5625,
+        "recall": 0.6805293005671077,
+        "f1_score": 0.6159110350727117,
+        "accuracy": 0.9007076514816453
+      },
+      "0.5": {
+        "precision": 0.6524216524216524,
+        "recall": 0.43289224952741023,
+        "f1_score": 0.5204545454545455,
+        "accuracy": 0.9066784608580274
+      },
+      "0.23477850669621972": {
+        "precision": 0.5403556771545828,
+        "recall": 0.7466918714555766,
+        "f1_score": 0.626984126984127,
+        "accuracy": 0.8960636886333481
+      }
+    },
+    "default_threshold_performance": {
+      "precision": 0.6524216524216524,
+      "recall": 0.43289224952741023,
+      "f1_score": 0.5204545454545455,
+      "accuracy": 0.9066784608580274
+    }
+  },
+  "optimal_f1_score": 0.626984126984127
+}

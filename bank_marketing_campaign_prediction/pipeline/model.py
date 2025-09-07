@@ -27,49 +27,49 @@ class ModelWrapper:
         Returns:
         self: Fitted classifier.
         """
-        # Initialize the base model
+        # Initialize the base model with exact hyperparameters as specified in experiment plan
         if self.config.model_type == "gradient_boosting":
-            # GradientBoosting doesn't support class_weight, filter it out
-            model_params = {k: v for k, v in self.config.model_params.items() if k != 'class_weight'}
-            base_model = GradientBoostingClassifier(**model_params)
+            base_model = GradientBoostingClassifier(**self.config.model_params)
         elif self.config.model_type == "random_forest":
             base_model = RandomForestClassifier(**self.config.model_params)
         else:
             raise ValueError(f"Unsupported model type: {self.config.model_type}")
         
-        # Perform hyperparameter tuning if specified
-        if self.config.hyperparameter_tuning.get('param_grid_search', False):
-            param_grid = {
-                'n_estimators': self.config.hyperparameter_tuning['n_estimators'],
-                'learning_rate': self.config.hyperparameter_tuning.get('learning_rate', [0.1]) if self.config.model_type == "gradient_boosting" else None,
-                'max_depth': self.config.hyperparameter_tuning['max_depth'],
-                'min_samples_split': self.config.hyperparameter_tuning['min_samples_split']
-            }
+        # Check if hyperparameter tuning is enabled
+        if self.config.hyperparameter_tuning.get('enabled', False):
+            # Perform hyperparameter tuning
+            param_grid = {}
+            for key, value in self.config.hyperparameter_tuning.items():
+                if key not in ['enabled', 'cv_folds'] and isinstance(value, list):
+                    param_grid[key] = value
             
-            # Remove None values for RandomForest
-            param_grid = {k: v for k, v in param_grid.items() if v is not None}
-            
-            cv = StratifiedKFold(
-                n_splits=self.config.hyperparameter_tuning['cv_folds'], 
-                shuffle=True, 
-                random_state=self.config.model_params['random_state']
-            )
-            
-            grid_search = GridSearchCV(
-                estimator=base_model,
-                param_grid=param_grid,
-                cv=cv,
-                scoring='roc_auc',
-                n_jobs=-1,
-                verbose=1
-            )
-            
-            grid_search.fit(X, y)
-            self.model = grid_search.best_estimator_
-            self.best_params_ = grid_search.best_params_
-            self.cv_results_ = grid_search.cv_results_
+            if param_grid:  # Only do grid search if there are parameters to search
+                cv = StratifiedKFold(
+                    n_splits=self.config.hyperparameter_tuning.get('cv_folds', 5), 
+                    shuffle=True, 
+                    random_state=self.config.model_params['random_state']
+                )
+                
+                grid_search = GridSearchCV(
+                    estimator=base_model,
+                    param_grid=param_grid,
+                    cv=cv,
+                    scoring='roc_auc',
+                    n_jobs=-1,
+                    verbose=1
+                )
+                
+                grid_search.fit(X, y)
+                self.model = grid_search.best_estimator_
+                self.best_params_ = grid_search.best_params_
+                self.cv_results_ = grid_search.cv_results_
+            else:
+                # No parameters to tune, fit directly
+                base_model.fit(X, y)
+                self.model = base_model
+                self.best_params_ = self.config.model_params
         else:
-            # Fit without hyperparameter tuning
+            # Fit without hyperparameter tuning as per experiment plan
             base_model.fit(X, y)
             self.model = base_model
             self.best_params_ = self.config.model_params

@@ -1,41 +1,46 @@
 data_prep:
-  version: "1.0"
-  dataset_name: "bank_marketing_campaign"
+  version: "2.0"
+  dataset_name: "bank_marketing_campaign_threshold_optimization"
   target_column: "target"
   categorical_columns: ["V2", "V3", "V4", "V5", "V7", "V8", "V9", "V11", "V16"]
   numerical_columns: ["V1", "V6", "V10", "V12", "V13", "V14", "V15"]
   v14_missing_threshold: -1.0
-  v6_outlier_percentiles:
-    lower: 0.01
-    upper: 0.99
+  v6_outlier_bounds:
+    lower: -1000
+    upper: 10000
 
 feature_prep:
-  encoding_method: "one_hot"
-  drop_first: true
+  encoding_method: "label_encoder"
+  drop_first: false
   handle_unknown: "ignore"
+  binary_features:
+    - "V14_is_missing"
+    - "V15_is_zero"
 
 model_evaluation:
   cv_folds: 5
   primary_metric: "roc_auc"
   random_state: 42
+  threshold_optimization: true
+  threshold_metric: "f1"
+  thresholds_to_evaluate: [0.2, 0.3, 0.5]
 
 model:
   model_type: "gradient_boosting"
   model_params:
+    learning_rate: 0.1
+    max_depth: 5
+    n_estimators: 200
     random_state: 42
-    class_weight: "balanced"
   hyperparameter_tuning:
-    n_estimators: [100, 150, 200]
-    learning_rate: [0.1, 0.15, 0.2]
-    max_depth: [3, 5, 7]
-    min_samples_split: [2, 5, 10]
-    param_grid_search: true
-    cv_folds: 5
+    enabled: false
   baseline_model:
-    model_type: "random_forest"
+    model_type: "gradient_boosting"
     params:
+      learning_rate: 0.1
+      max_depth: 5
+      n_estimators: 200
       random_state: 42
-      class_weight: "balanced"
 
 
 
