@@ -1,20 +1,41 @@
 data_prep:
-  dataset: "name"
-  version: "version"
-  dataset_name: "dataset_name"
-  placeholder: "placeholder"
-  
+  version: "1.0"
+  dataset_name: "bank_marketing_campaign"
+  target_column: "target"
+  categorical_columns: ["V2", "V3", "V4", "V5", "V7", "V8", "V9", "V11", "V16"]
+  numerical_columns: ["V1", "V6", "V10", "V12", "V13", "V14", "V15"]
+  v14_missing_threshold: -1.0
+  v6_outlier_percentiles:
+    lower: 0.01
+    upper: 0.99
+
 feature_prep:
-  placeholder: "placeholder"
+  encoding_method: "one_hot"
+  drop_first: true
+  handle_unknown: "ignore"
 
 model_evaluation:
-    split_ratio: 0.2
-    placeholder: "placeholder"
+  cv_folds: 5
+  primary_metric: "roc_auc"
+  random_state: 42
 
 model:
-    model_type: "model_type"
-    model_params: Dict[str, Any]
-    placeholder: "placeholder"
+  model_type: "gradient_boosting"
+  model_params:
+    random_state: 42
+    class_weight: "balanced"
+  hyperparameter_tuning:
+    n_estimators: [100, 150, 200]
+    learning_rate: [0.1, 0.15, 0.2]
+    max_depth: [3, 5, 7]
+    min_samples_split: [2, 5, 10]
+    param_grid_search: true
+    cv_folds: 5
+  baseline_model:
+    model_type: "random_forest"
+    params:
+      random_state: 42
+      class_weight: "balanced"
 
 
 

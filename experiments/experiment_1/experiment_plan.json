@@ -1,0 +1,34 @@
+{
+  "experiment_name": "Gradient Boosting Baseline with Optimized Preprocessing",
+  "task_type": "binary_classification",
+  "target_column": "target",
+  "evaluation_metric": "ROC-AUC",
+  "experiment_preprocessing_steps": "1. Handle special values: Create binary indicator 'V14_is_missing' for V14==-1.0 values and 'V15_is_zero' for V15==0.0 values\n2. Outlier treatment: Cap V6 feature using 99th and 1st percentile clipping (V6_q99 = df['V6'].quantile(0.99), V6_q01 = df['V6'].quantile(0.01), df['V6'] = np.clip(df['V6'], V6_q01, V6_q99))\n3. Categorical encoding: Apply one-hot encoding to all categorical columns ['V2', 'V3', 'V4', 'V5', 'V7', 'V8', 'V9', 'V11', 'V16'] using pd.get_dummies() with drop_first=True\n4. Column alignment: Ensure training and test sets have identical feature columns by taking intersection of columns after encoding\n5. No scaling required: Tree-based models handle mixed feature scales naturally",
+  "experiment_feature_engineering_steps": "1. No complex feature engineering required based on exploration experiments\n2. Basic preprocessing provides sufficient feature representation\n3. Focus on preserving the strong predictive power of V12 (call duration/intensity) as identified in EDA\n4. Maintain categorical feature information through one-hot encoding\n5. Feature selection not needed - all 44 processed features contribute to model performance",
+  "experiment_model_selection_steps": "1. Primary algorithm: GradientBoostingClassifier with hyperparameter optimization\n2. Hyperparameters to tune: n_estimators=[100, 150, 200], learning_rate=[0.1, 0.15, 0.2], max_depth=[3, 5, 7], min_samples_split=[2, 5, 10]\n3. Cross-validation: Use 5-fold stratified CV to maintain class balance during hyperparameter tuning\n4. Baseline comparison: Include RandomForestClassifier with class_weight='balanced' as performance benchmark\n5. Final model selection based on highest mean CV ROC-AUC score with consideration for model complexity and overfitting",
+  "experiment_evaluation_strategy": {
+    "primary_metric": "ROC-AUC",
+    "cross_validation": "5-fold stratified CV for hyperparameter tuning",
+    "test_evaluation": "Single holdout test set evaluation",
+    "diagnostic_analyses": [
+      "Feature importance analysis to validate V12 as top predictor and understand model decisions",
+      "Performance by job type (V2) segments to identify model strengths/weaknesses across customer demographics", 
+      "ROC curve analysis to determine optimal probability threshold for business application",
+      "Precision-Recall analysis given class imbalance to assess model performance on minority class",
+      "Calibration plot to evaluate probability reliability for business decision-making",
+      "Error analysis on false positives/negatives to understand misclassification patterns",
+      "Learning curves to assess training data sufficiency and potential overfitting"
+    ]
+  },
+  "expected_outputs": {
+    "model_performance": "Target ROC-AUC ≥ 0.935 based on exploration experiments",
+    "model_artifact": "Trained GradientBoostingClassifier with optimized hyperparameters",
+    "feature_importance": "Ranked feature importance with V12 as top contributor",
+    "evaluation_report": "Comprehensive model performance analysis across multiple metrics and segments",
+    "recommendations": "Business insights for marketing campaign optimization based on model predictions"
+  },
+  "data_paths": {
+    "train_data": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/data/train.csv",
+    "test_data": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/data/test.csv"
+  }
+}

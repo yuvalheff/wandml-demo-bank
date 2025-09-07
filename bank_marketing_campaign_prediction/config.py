@@ -11,25 +11,33 @@ class ConfigParsingFailed(Exception):
 class DataConfig:
     version: str
     dataset_name: str
-    placeholder: Any
+    target_column: str
+    categorical_columns: List[str]
+    numerical_columns: List[str]
+    v14_missing_threshold: float
+    v6_outlier_percentiles: Dict[str, float]
 
 
 @dataclass
 class FeaturesConfig:
-    placeholder: Any
+    encoding_method: str
+    drop_first: bool
+    handle_unknown: str
 
 
 @dataclass
 class ModelEvalConfig:
-    split_ratio: float
-    placeholder: Any
+    cv_folds: int
+    primary_metric: str
+    random_state: int
 
 
 @dataclass
 class ModelConfig:
     model_type: str
     model_params: Dict[str, Any]
-    placeholder: Any
+    hyperparameter_tuning: Dict[str, Any]
+    baseline_model: Dict[str, Any]
 
 
 @dataclass

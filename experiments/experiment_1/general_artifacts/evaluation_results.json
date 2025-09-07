@@ -1,0 +1,55 @@
+{
+  "primary_metric": "roc_auc",
+  "roc_auc": 0.9350091393397804,
+  "average_precision": 0.7326187353759313,
+  "brier_score": 0.06204513474966872,
+  "classification_report": {
+    "1": {
+      "precision": 0.9324487334137516,
+      "recall": 0.9679439018281993,
+      "f1-score": 0.9498648316539691,
+      "support": 3993.0
+    },
+    "2": {
+      "precision": 0.6604774535809018,
+      "recall": 0.4706994328922495,
+      "f1-score": 0.5496688741721855,
+      "support": 529.0
+    },
+    "accuracy": 0.9097744360902256,
+    "macro avg": {
+      "precision": 0.7964630934973267,
+      "recall": 0.7193216673602244,
+      "f1-score": 0.7497668529130772,
+      "support": 4522.0
+    },
+    "weighted avg": {
+      "precision": 0.9006325443311383,
+      "recall": 0.9097744360902256,
+      "f1-score": 0.9030484536115401,
+      "support": 4522.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      3865,
+      128
+    ],
+    [
+      280,
+      249
+    ]
+  ],
+  "plot_paths": {
+    "roc_curve": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_1/plots/roc_curve.html",
+    "precision_recall": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_1/plots/precision_recall_curve.html",
+    "confusion_matrix": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_1/plots/confusion_matrix.html",
+    "calibration": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_1/plots/calibration_curve.html",
+    "feature_importance": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_1/plots/feature_importance.html",
+    "prediction_distribution": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_1/plots/prediction_distribution.html",
+    "threshold_analysis": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_1/plots/threshold_analysis.html"
+  },
+  "total_samples": 4522,
+  "positive_samples": 529,
+  "negative_samples": 3993
+}

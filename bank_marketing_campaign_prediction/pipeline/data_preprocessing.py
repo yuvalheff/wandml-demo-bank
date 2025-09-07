@@ -1,5 +1,7 @@
 from typing import Optional
 import pandas as pd
+import numpy as np
+import pickle
 
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -12,7 +14,7 @@ class DataProcessor(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> 'DataProcessor':
         """
-        Fit the feature processor to the data.
+        Fit the data processor to the data.
 
         Parameters:
         X (pd.DataFrame): The input features.
@@ -21,7 +23,14 @@ class DataProcessor(BaseEstimator, TransformerMixin):
         Returns:
         DataProcessor: The fitted processor.
         """
-        # Implement fitting logic if necessary
+        # Calculate outlier thresholds for V6
+        if 'V6' in X.columns:
+            self.v6_q01 = X['V6'].quantile(self.config.v6_outlier_percentiles['lower'])
+            self.v6_q99 = X['V6'].quantile(self.config.v6_outlier_percentiles['upper'])
+        else:
+            self.v6_q01 = None
+            self.v6_q99 = None
+        
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -34,10 +43,21 @@ class DataProcessor(BaseEstimator, TransformerMixin):
         Returns:
         pd.DataFrame: The transformed features.
         """
-        # Implement transformation logic based on the config
-        # For example, you might want to select specific columns or apply transformations
-        # Here we just return the input DataFrame as a placeholder
-        return X
+        X_transformed = X.copy()
+        
+        # 1. Handle special values for V14 - Create binary indicator for V14==-1.0
+        if 'V14' in X_transformed.columns:
+            X_transformed['V14_is_missing'] = (X_transformed['V14'] == self.config.v14_missing_threshold).astype(int)
+        
+        # 2. Handle special values for V15 - Create binary indicator for V15==0.0
+        if 'V15' in X_transformed.columns:
+            X_transformed['V15_is_zero'] = (X_transformed['V15'] == 0.0).astype(int)
+        
+        # 3. Outlier treatment for V6 - Cap using 99th and 1st percentile
+        if 'V6' in X_transformed.columns and self.v6_q01 is not None and self.v6_q99 is not None:
+            X_transformed['V6'] = np.clip(X_transformed['V6'], self.v6_q01, self.v6_q99)
+        
+        return X_transformed
 
     def fit_transform(self, X: pd.DataFrame, y: Optional[pd.Series] = None, **fit_params) -> pd.DataFrame:
         """
@@ -54,21 +74,24 @@ class DataProcessor(BaseEstimator, TransformerMixin):
 
     def save(self, path: str) -> None:
         """
-        Save the feature processor as an artifact
+        Save the data processor as an artifact
 
         Parameters:
-        path (str): The file path to save the configuration.
+        path (str): The file path to save the processor.
         """
+        with open(path, 'wb') as f:
+            pickle.dump(self, f)
 
-    def load(self, path: str) -> 'DataProcessor':
+    @classmethod
+    def load(cls, path: str) -> 'DataProcessor':
         """
-        Load the feature processor from a saved artifact.
+        Load the data processor from a saved artifact.
 
         Parameters:
-        path (str): The file path to load the configuration from.
+        path (str): The file path to load the processor from.
 
         Returns:
-        FeatureProcessor: The loaded feature processor.
+        DataProcessor: The loaded data processor.
         """
-        # Implement loading logic if necessary
-        return self
+        with open(path, 'rb') as f:
+            return pickle.load(f)
