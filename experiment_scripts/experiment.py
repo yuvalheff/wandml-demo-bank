@@ -102,6 +102,22 @@ class Experiment:
         primary_metric_value = evaluation_results[self._config.model_evaluation.primary_metric]
         print(f"✅ Model evaluation complete. {self._config.model_evaluation.primary_metric.upper()}: {primary_metric_value:.4f}")
         
+        # Ensemble diversity evaluation (if applicable)
+        print("🔄 Evaluating ensemble diversity...")
+        ensemble_results = evaluator.evaluate_ensemble_diversity(model, X_test_processed, y_test)
+        evaluation_results['ensemble_analysis'] = ensemble_results
+        
+        if ensemble_results.get('is_ensemble', False):
+            print(f"✅ Ensemble analysis complete.")
+            print(f"   - Number of base estimators: {ensemble_results['n_estimators']}")
+            print(f"   - Average correlation: {ensemble_results['diversity_metrics']['avg_correlation']:.3f}")
+            
+            # Print individual estimator performance
+            for name, perf in ensemble_results['individual_performance'].items():
+                print(f"   - {name}: ROC-AUC = {perf['roc_auc']:.3f}")
+        else:
+            print("ℹ️ Not an ensemble model - skipping diversity analysis")
+        
         # Threshold optimization as per experiment plan
         if self._config.model_evaluation.threshold_optimization:
             print("🔄 Performing threshold optimization...")
@@ -175,7 +191,7 @@ class Experiment:
         )
         
         # 2. Log to active MLflow run if available
-        active_run_id = "c9250f2dc3e54636bbcb6ca34e4da838"
+        active_run_id = "152a7fcf358440fc8a6dd408706d7f92"
         logged_model_uri = None
         
         if active_run_id and active_run_id != 'None' and active_run_id.strip():

@@ -35,6 +35,10 @@ class DataProcessor(BaseEstimator, TransformerMixin):
                 self.label_encoders[col] = LabelEncoder()
                 self.label_encoders[col].fit(X_copy[col])
         
+        # Fit duration threshold for duration_high feature (75th percentile)
+        if 'V12' in X_copy.columns:
+            self.duration_threshold_ = X_copy['V12'].quantile(0.75)
+        
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -62,13 +66,17 @@ class DataProcessor(BaseEstimator, TransformerMixin):
                     X_transformed.loc[mask, col] = self.label_encoders[col].classes_[0]
                     X_transformed[col] = self.label_encoders[col].transform(X_transformed[col])
         
-        # 2. Create binary features: V14_is_missing for V14 == -1.0
-        if 'V14' in X_transformed.columns:
-            X_transformed['V14_is_missing'] = (X_transformed['V14'] == self.config.v14_missing_threshold).astype(int)
+        # 2. Create binary features: balance_positive for V6 > 0
+        if 'V6' in X_transformed.columns:
+            X_transformed['balance_positive'] = (X_transformed['V6'] > 0).astype(int)
         
-        # 3. Create binary features: V15_is_zero for V15 == 0.0
-        if 'V15' in X_transformed.columns:
-            X_transformed['V15_is_zero'] = (X_transformed['V15'] == 0.0).astype(int)
+        # 3. Create binary features: duration_high for V12 > 75th percentile
+        if 'V12' in X_transformed.columns:
+            # Note: This requires fitting on training data to get the quantile
+            if not hasattr(self, 'duration_threshold_'):
+                # If not fitted, calculate on current data (for transform only)
+                self.duration_threshold_ = X_transformed['V12'].quantile(0.75)
+            X_transformed['duration_high'] = (X_transformed['V12'] > self.duration_threshold_).astype(int)
         
         # 4. Apply np.clip to V6 column with bounds (-1000, 10000) to handle extreme outliers
         if 'V6' in X_transformed.columns:

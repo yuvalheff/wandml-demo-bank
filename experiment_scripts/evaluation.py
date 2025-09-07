@@ -225,37 +225,83 @@ class ModelEvaluator:
         return filepath
     
     def _plot_feature_importance(self, model, feature_names):
-        """Plot feature importance."""
+        """Plot feature importance for both single models and ensembles."""
         try:
             importance = model.get_feature_importance()
             if importance is None or len(importance) == 0:
                 return None
             
             if feature_names is None:
-                feature_names = [f'Feature_{i}' for i in range(len(importance))]
+                feature_names = [f'Feature_{i}' for i in range(18)]  # Expected 18 features
             
-            # Create importance dataframe and sort
-            importance_df = pd.DataFrame({
-                'feature': feature_names[:len(importance)],
-                'importance': importance
-            }).sort_values('importance', ascending=True)
+            # Handle ensemble vs single model
+            if isinstance(importance, dict) and len(importance) > 1:
+                # Ensemble model - create subplot for each base estimator
+                estimator_names = list(importance.keys())
+                n_estimators = len(estimator_names)
+                
+                # Create subplots
+                from plotly.subplots import make_subplots
+                fig = make_subplots(
+                    rows=1, cols=n_estimators,
+                    subplot_titles=estimator_names,
+                    shared_yaxis=True,
+                    horizontal_spacing=0.1
+                )
+                
+                for i, (estimator_name, importances) in enumerate(importance.items()):
+                    # Create importance dataframe and sort
+                    importance_df = pd.DataFrame({
+                        'feature': feature_names[:len(importances)],
+                        'importance': importances
+                    }).sort_values('importance', ascending=True)
+                    
+                    # Take top 15 features for space
+                    importance_df = importance_df.tail(15)
+                    
+                    fig.add_trace(go.Bar(
+                        x=importance_df['importance'],
+                        y=importance_df['feature'],
+                        orientation='h',
+                        marker_color=self.app_color_palette[i % len(self.app_color_palette)],
+                        name=estimator_name,
+                        showlegend=False
+                    ), row=1, col=i+1)
+                
+                fig.update_layout(
+                    title='Feature Importance by Base Estimator',
+                    height=800,
+                    width=1200
+                )
+                
+            else:
+                # Single model or ensemble with single importance vector
+                if isinstance(importance, dict):
+                    importance = list(importance.values())[0]
+                
+                # Create importance dataframe and sort
+                importance_df = pd.DataFrame({
+                    'feature': feature_names[:len(importance)],
+                    'importance': importance
+                }).sort_values('importance', ascending=True)
+                
+                # Take top 20 features
+                importance_df = importance_df.tail(20)
+                
+                fig = go.Figure(go.Bar(
+                    x=importance_df['importance'],
+                    y=importance_df['feature'],
+                    orientation='h',
+                    marker_color=self.app_color_palette[0]
+                ))
+                
+                fig.update_layout(
+                    title='Top 20 Feature Importance',
+                    xaxis_title='Importance',
+                    yaxis_title='Features',
+                    height=600
+                )
             
-            # Take top 20 features
-            importance_df = importance_df.tail(20)
-            
-            fig = go.Figure(go.Bar(
-                x=importance_df['importance'],
-                y=importance_df['feature'],
-                orientation='h',
-                marker_color=self.app_color_palette[0]
-            ))
-            
-            fig.update_layout(
-                title='Top 20 Feature Importance',
-                xaxis_title='Importance',
-                yaxis_title='Features',
-                height=600
-            )
             fig = self._apply_style(fig)
             
             filepath = os.path.join(self.plots_dir, "feature_importance.html")
@@ -426,3 +472,118 @@ class ModelEvaluator:
             }
         
         return results
+    
+    def evaluate_ensemble_diversity(self, model, X_test: pd.DataFrame, y_test: pd.Series) -> Dict[str, Any]:
+        """
+        Evaluate ensemble diversity and individual estimator performance.
+        
+        Returns:
+        Dict containing ensemble diversity metrics and individual estimator results.
+        """
+        try:
+            # Check if this is an ensemble model
+            ensemble_info = model.get_ensemble_info()
+            if not ensemble_info.get('is_ensemble', False):
+                return {'is_ensemble': False, 'message': 'Not an ensemble model'}
+            
+            # Get individual estimator predictions
+            individual_results = {}
+            ensemble_model = model.model  # Access the VotingClassifier
+            
+            for name, estimator in ensemble_model.named_estimators_.items():
+                # Get predictions from individual estimator
+                y_pred_proba = estimator.predict_proba(X_test)[:, 1]
+                y_pred = estimator.predict(X_test)
+                
+                # Calculate metrics for individual estimator
+                roc_auc = roc_auc_score(y_test, y_pred_proba)
+                avg_precision = average_precision_score(y_test, y_pred_proba)
+                
+                individual_results[name] = {
+                    'roc_auc': roc_auc,
+                    'avg_precision': avg_precision,
+                    'predictions': y_pred_proba  # Store for diversity calculation
+                }
+            
+            # Calculate ensemble diversity metrics
+            predictions = np.column_stack([
+                individual_results[name]['predictions'] for name in individual_results.keys()
+            ])
+            
+            # Pairwise correlations between estimators
+            pred_df = pd.DataFrame(predictions, columns=list(individual_results.keys()))
+            correlation_matrix = pred_df.corr()
+            
+            # Average pairwise correlation (lower is more diverse)
+            avg_correlation = correlation_matrix.values[np.triu_indices_from(correlation_matrix.values, k=1)].mean()
+            
+            # Create diversity plot
+            diversity_plot_path = self._plot_ensemble_diversity(individual_results, correlation_matrix)
+            
+            results = {
+                'is_ensemble': True,
+                'n_estimators': len(individual_results),
+                'individual_performance': individual_results,
+                'ensemble_info': ensemble_info,
+                'diversity_metrics': {
+                    'avg_correlation': avg_correlation,
+                    'correlation_matrix': correlation_matrix.to_dict()
+                },
+                'diversity_plot': diversity_plot_path
+            }
+            
+            return results
+            
+        except Exception as e:
+            print(f"Error evaluating ensemble diversity: {e}")
+            return {'error': str(e)}
+    
+    def _plot_ensemble_diversity(self, individual_results, correlation_matrix):
+        """Plot ensemble diversity analysis."""
+        try:
+            from plotly.subplots import make_subplots
+            
+            fig = make_subplots(
+                rows=1, cols=2,
+                subplot_titles=['Individual Estimator Performance', 'Prediction Correlation Matrix'],
+                specs=[[{'secondary_y': False}, {'secondary_y': False}]]
+            )
+            
+            # Plot 1: Individual estimator performance
+            estimator_names = list(individual_results.keys())
+            roc_aucs = [individual_results[name]['roc_auc'] for name in estimator_names]
+            
+            fig.add_trace(go.Bar(
+                x=estimator_names,
+                y=roc_aucs,
+                name='ROC-AUC',
+                marker_color=self.app_color_palette[0]
+            ), row=1, col=1)
+            
+            # Plot 2: Correlation heatmap
+            fig.add_trace(go.Heatmap(
+                z=correlation_matrix.values,
+                x=correlation_matrix.columns,
+                y=correlation_matrix.index,
+                colorscale='RdBu',
+                zmid=0,
+                name='Correlation',
+                showscale=True
+            ), row=1, col=2)
+            
+            fig.update_layout(
+                title='Ensemble Diversity Analysis',
+                height=500,
+                width=1000,
+                showlegend=False
+            )
+            
+            fig = self._apply_style(fig)
+            
+            filepath = os.path.join(self.plots_dir, "ensemble_diversity.html")
+            fig.write_html(filepath, include_plotlyjs=True, config={'responsive': True, 'displayModeBar': False})
+            return filepath
+            
+        except Exception as e:
+            print(f"Error plotting ensemble diversity: {e}")
+            return None

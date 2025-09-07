@@ -1,0 +1,67 @@
+{
+  "experiment_name": "Gradient Boosting with Probability Calibration",
+  "iteration": 3,
+  "objective": "Improve model probability estimates and maintain threshold optimization gains through probability calibration",
+  "key_change": "Added CalibratedClassifierCV with sigmoid method to improve probability reliability for threshold optimization",
+  
+  "results_summary": {
+    "primary_metric": {
+      "name": "ROC-AUC",
+      "value": 0.9338,
+      "target": "> 0.932",
+      "status": "achieved"
+    },
+    "improvement_over_previous": {
+      "roc_auc_improvement": 0.0016,
+      "brier_score_improvement": -0.0012,
+      "f1_optimal_improvement": 0.007
+    },
+    "threshold_optimization": {
+      "optimal_threshold": 0.245,
+      "f1_score": 0.634,
+      "precision": 0.548,
+      "recall": 0.750
+    }
+  },
+  
+  "key_findings": [
+    "Successfully improved probability calibration with Brier Score reduction from 0.0635 to 0.0623",
+    "ROC-AUC increased by +0.0016, exceeding target threshold of 0.932",
+    "Enhanced threshold optimization effectiveness with F1-score improvement from 0.627 to 0.634",
+    "Maintained recall at target level of ~75% while improving precision",
+    "Severe class imbalance (11.7% positive) continues to limit performance at default threshold"
+  ],
+  
+  "weaknesses": [
+    "Class imbalance persistence: Low default threshold recall (44.8%) requires threshold optimization for practical use",
+    "Limited feature engineering: Static feature set of 18 features may limit model potential", 
+    "Calibration method limitation: Only sigmoid calibration tested, isotonic or ensemble methods unexplored",
+    "Computational cost: Training time increased ~3x due to CalibratedClassifierCV internal cross-validation"
+  ],
+  
+  "future_suggestions": [
+    "Advanced feature engineering: Create interaction features, temporal features, and domain-specific ratios to expand beyond 18 features",
+    "Ensemble with calibration variants: Test isotonic calibration, multiple base algorithms with calibration, ensemble calibration methods",
+    "Advanced class imbalance techniques: Cost-sensitive learning, advanced sampling (ADASYN, BorderlineSMOTE), focal loss implementation"
+  ],
+  
+  "model_artifacts": {
+    "calibrated_model": "CalibratedClassifierCV with GradientBoostingClassifier base",
+    "preprocessing_pipeline": "LabelEncoder + quantile clipping + binary indicators",
+    "mlflow_model": "Registered with proper signatures for production deployment"
+  },
+  
+  "business_impact": {
+    "campaign_targeting": "Improved probability calibration enables more accurate targeting decisions",
+    "threshold_flexibility": "Optimal threshold (0.245) provides 75% recall with 54.8% precision",
+    "production_readiness": "MLflow integration supports real-time campaign deployment"
+  },
+  
+  "success_criteria_status": {
+    "primary": "✅ Maintained ROC-AUC ≥ 0.932 (achieved 0.9338)",
+    "brier_score": "✅ Improved Brier Score from 0.0635 to 0.0623",
+    "calibration_quality": "✅ Better calibrated probabilities demonstrated",
+    "recall_maintenance": "✅ Maintained recall ≥ 74.7% (achieved 75.0%)",
+    "business_impact": "✅ Stable improvement in targeting effectiveness"
+  }
+}

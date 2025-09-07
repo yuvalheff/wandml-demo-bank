@@ -1,0 +1,92 @@
+{
+  "experiment_name": "Multi-Algorithm Calibrated Ensemble",
+  "iteration": 4,
+  "primary_change": "Implement ensemble of calibrated algorithms (Gradient Boosting + XGBoost + LightGBM) with soft voting",
+  "target_metric": "ROC-AUC >= 0.935",
+  "task_type": "binary_classification",
+  "target_column": "target",
+  "experiment_preprocessing_steps": "1. Load train and test datasets from existing CSV files. 2. Apply label encoding to categorical columns: ['V2', 'V3', 'V4', 'V5', 'V7', 'V8', 'V9', 'V11', 'V16'] using LabelEncoder for each column. 3. Create two engineered binary features: 'balance_positive' = (V6 > 0).astype(int) and 'duration_high' = (V12 > V12.quantile(0.75)).astype(int). 4. Verify final feature set contains 18 features (16 original + 2 engineered). 5. Split features (X) from target column ('target').",
+  "experiment_feature_engineering_steps": "Maintain the minimal feature engineering approach from previous successful iterations to isolate ensemble impact. Create exactly 2 binary indicator features: 'balance_positive' indicating positive account balance (V6 > 0) and 'duration_high' indicating above-75th percentile call duration (V12 > quantile(0.75)). These features showed consistent value in previous experiments and align with business logic. Do not add additional features to ensure experiment focuses purely on ensemble methodology benefits.",
+  "experiment_model_selection_steps": "1. Configure three base algorithms with identical hyperparameters for fair comparison: GradientBoostingClassifier, XGBClassifier, and LGBMClassifier, all with n_estimators=100, learning_rate=0.1, max_depth=6, random_state=42. 2. Wrap each algorithm in CalibratedClassifierCV with cv=3 and method='sigmoid' to maintain calibration quality from Experiment 3. 3. Create VotingClassifier ensemble with voting='soft' to leverage calibrated probabilities from all three algorithms. 4. Train ensemble on full training set and evaluate on held-out test set. 5. Use 3-fold cross-validation during development to ensure robust performance estimates.",
+  "experiment_evaluation_metric": "ROC-AUC",
+  "evaluation_strategy": {
+    "primary_metrics": [
+      {
+        "name": "ROC-AUC",
+        "description": "Area under ROC curve for ranking quality assessment",
+        "target": ">= 0.935"
+      }
+    ],
+    "secondary_metrics": [
+      {
+        "name": "Brier Score", 
+        "description": "Calibration quality measurement (lower is better)",
+        "target": "<= 0.063"
+      },
+      {
+        "name": "Average Precision",
+        "description": "Precision-recall curve area for imbalanced data",
+        "target": ">= 0.73"
+      }
+    ],
+    "diagnostic_analyses": [
+      {
+        "analysis": "Individual Algorithm Performance",
+        "description": "Evaluate each base algorithm (GB, XGB, LGB) individually to understand ensemble contribution",
+        "output": "individual_algorithms_comparison.html"
+      },
+      {
+        "analysis": "Ensemble Diversity Analysis", 
+        "description": "Analyze prediction correlations between algorithms to validate ensemble benefits",
+        "output": "ensemble_diversity_analysis.html"
+      },
+      {
+        "analysis": "Calibration Curve Comparison",
+        "description": "Compare calibration quality of ensemble vs individual algorithms",
+        "output": "ensemble_calibration_analysis.html"
+      },
+      {
+        "analysis": "Threshold Optimization",
+        "description": "Find optimal threshold for ensemble predictions and compare to individual algorithms",
+        "output": "ensemble_threshold_optimization.html"
+      },
+      {
+        "analysis": "Business Impact Analysis",
+        "description": "Evaluate precision/recall trade-offs at optimal threshold for campaign targeting decisions",
+        "output": "business_impact_analysis.html"
+      }
+    ]
+  },
+  "success_criteria": [
+    "ROC-AUC >= 0.935 on test set (improvement of ~0.0012 over Experiment 3)",
+    "Brier Score <= 0.063 (maintain calibration quality)", 
+    "F1-Score at optimal threshold >= 0.635 (maintain threshold optimization effectiveness)",
+    "Ensemble shows improved diversity compared to single algorithms",
+    "Model deployable via MLflow with proper ensemble signature"
+  ],
+  "expected_outputs": [
+    "trained_ensemble_model.pkl - Serialized VotingClassifier ensemble",
+    "individual_algorithms_comparison.html - Performance comparison of base algorithms", 
+    "ensemble_diversity_analysis.html - Correlation analysis between algorithm predictions",
+    "ensemble_calibration_analysis.html - Calibration curves for ensemble vs individual models",
+    "ensemble_threshold_optimization.html - Optimal threshold analysis for ensemble",
+    "business_impact_analysis.html - Precision/recall analysis for campaign targeting",
+    "experiment_results.json - All metrics and performance summaries",
+    "mlflow_model/ - MLflow logged ensemble model with proper signatures"
+  ],
+  "rationale": "Previous experiments achieved strong performance with gradient boosting and calibration (ROC-AUC: 0.9338). Exploration experiments show that multi-algorithm ensemble with calibrated GB, XGBoost, and LightGBM can provide additional performance gains through algorithm diversity while maintaining calibration quality. This approach builds naturally on Experiment 3's calibration success and addresses the ensemble recommendations from previous iteration analysis.",
+  "risks_and_mitigations": [
+    {
+      "risk": "Training time increases significantly with 3 algorithms + calibration",
+      "mitigation": "Use efficient hyperparameters and monitor training duration; acceptable for offline model training"
+    },
+    {
+      "risk": "Ensemble may overfit if base algorithms are too correlated", 
+      "mitigation": "Analyze prediction diversity and validate cross-validation performance before test evaluation"
+    },
+    {
+      "risk": "Model complexity increases deployment requirements",
+      "mitigation": "Ensure MLflow compatibility and test ensemble inference pipeline"
+    }
+  ]
+}

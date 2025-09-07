@@ -1,6 +1,6 @@
 data_prep:
-  version: "3.0"
-  dataset_name: "bank_marketing_campaign_probability_calibration"
+  version: "4.0"
+  dataset_name: "bank_marketing_campaign_multi_algorithm_ensemble"
   target_column: "target"
   categorical_columns: ["V2", "V3", "V4", "V5", "V7", "V8", "V9", "V11", "V16"]
   numerical_columns: ["V1", "V6", "V10", "V12", "V13", "V14", "V15"]
@@ -14,24 +14,41 @@ feature_prep:
   drop_first: false
   handle_unknown: "ignore"
   binary_features:
-    - "V14_is_missing"
-    - "V15_is_zero"
+    - "balance_positive"
+    - "duration_high"
 
 model_evaluation:
-  cv_folds: 5
+  cv_folds: 3
   primary_metric: "roc_auc"
   random_state: 42
-  threshold_optimization: true
-  threshold_metric: "f1"
-  thresholds_to_evaluate: [0.2, 0.3, 0.5]
+  threshold_optimization: false
+  threshold_metric: "roc_auc"
+  thresholds_to_evaluate: [0.5]
 
 model:
-  model_type: "gradient_boosting"
+  model_type: "multi_algorithm_ensemble"
   model_params:
-    learning_rate: 0.1
-    max_depth: 5
-    n_estimators: 200
-    random_state: 42
+    base_algorithms:
+      - algorithm: "gradient_boosting"
+        params:
+          n_estimators: 100
+          learning_rate: 0.1
+          max_depth: 6
+          random_state: 42
+      - algorithm: "xgboost"
+        params:
+          n_estimators: 100
+          learning_rate: 0.1
+          max_depth: 6
+          random_state: 42
+      - algorithm: "lightgbm"
+        params:
+          n_estimators: 100
+          learning_rate: 0.1
+          max_depth: 6
+          random_state: 42
+    ensemble_method: "voting"
+    voting_type: "soft"
     calibration_enabled: true
     calibration_method: "sigmoid"
     calibration_cv: 3
@@ -40,9 +57,9 @@ model:
   baseline_model:
     model_type: "gradient_boosting"
     params:
+      n_estimators: 100
       learning_rate: 0.1
-      max_depth: 5
-      n_estimators: 200
+      max_depth: 6
       random_state: 42
 
 
