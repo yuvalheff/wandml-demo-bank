@@ -1,0 +1,96 @@
+{
+  "primary_metric": "roc_auc",
+  "roc_auc": 0.9338270139095023,
+  "average_precision": 0.7328365029090103,
+  "brier_score": 0.06225383357436859,
+  "classification_report": {
+    "1": {
+      "precision": 0.9298919567827131,
+      "recall": 0.9699474079639369,
+      "f1-score": 0.9494974258396666,
+      "support": 3993.0
+    },
+    "2": {
+      "precision": 0.6638655462184874,
+      "recall": 0.44801512287334594,
+      "f1-score": 0.5349887133182845,
+      "support": 529.0
+    },
+    "accuracy": 0.9088898717381689,
+    "macro avg": {
+      "precision": 0.7968787515006002,
+      "recall": 0.7089812654186414,
+      "f1-score": 0.7422430695789755,
+      "support": 4522.0
+    },
+    "weighted avg": {
+      "precision": 0.8987712201200693,
+      "recall": 0.9088898717381689,
+      "f1-score": 0.901006689677833,
+      "support": 4522.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      3873,
+      120
+    ],
+    [
+      292,
+      237
+    ]
+  ],
+  "plot_paths": {
+    "roc_curve": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_3/plots/roc_curve.html",
+    "precision_recall": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_3/plots/precision_recall_curve.html",
+    "confusion_matrix": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_3/plots/confusion_matrix.html",
+    "calibration": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_3/plots/calibration_curve.html",
+    "feature_importance": null,
+    "prediction_distribution": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_3/plots/prediction_distribution.html",
+    "threshold_analysis": "/Users/yuvalheffetz/ds-agent-projects/session_313737e4-b92d-4cb9-8eb5-68f5df26d5d6/experiments/experiment_3/plots/threshold_analysis.html"
+  },
+  "total_samples": 4522,
+  "positive_samples": 529,
+  "negative_samples": 3993,
+  "threshold_optimization": {
+    "optimal_threshold": {
+      "threshold": 0.2454929197523991,
+      "precision": 0.5483425414364641,
+      "recall": 0.7504725897920604,
+      "f1_score": 0.6336791699920191
+    },
+    "threshold_performance": {
+      "0.2": {
+        "precision": 0.509090909090909,
+        "recall": 0.7939508506616257,
+        "f1_score": 0.620384047267356,
+        "accuracy": 0.8863334807607254
+      },
+      "0.3": {
+        "precision": 0.573015873015873,
+        "recall": 0.6824196597353497,
+        "f1_score": 0.6229508196721312,
+        "accuracy": 0.9033613445378151
+      },
+      "0.5": {
+        "precision": 0.6638655462184874,
+        "recall": 0.44801512287334594,
+        "f1_score": 0.5349887133182845,
+        "accuracy": 0.9088898717381689
+      },
+      "0.2454929197523991": {
+        "precision": 0.5483425414364641,
+        "recall": 0.7504725897920604,
+        "f1_score": 0.6336791699920191,
+        "accuracy": 0.8984962406015038
+      }
+    },
+    "default_threshold_performance": {
+      "precision": 0.6638655462184874,
+      "recall": 0.44801512287334594,
+      "f1_score": 0.5349887133182845,
+      "accuracy": 0.9088898717381689
+    }
+  },
+  "optimal_f1_score": 0.6336791699920191
+}

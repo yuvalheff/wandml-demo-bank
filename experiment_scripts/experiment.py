@@ -175,7 +175,7 @@ class Experiment:
         )
         
         # 2. Log to active MLflow run if available
-        active_run_id = "d812a8c4475e48269f62f181ff71308a"
+        active_run_id = "c9250f2dc3e54636bbcb6ca34e4da838"
         logged_model_uri = None
         
         if active_run_id and active_run_id != 'None' and active_run_id.strip():

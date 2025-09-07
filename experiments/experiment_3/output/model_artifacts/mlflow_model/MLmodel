@@ -1,0 +1,37 @@
+flavors:
+  python_function:
+    code: code
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.12.11
+  sklearn:
+    code: code
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.7.1
+is_signature_from_type_hint: false
+mlflow_version: 3.3.2
+model_id: null
+model_size_bytes: 2677123
+model_uuid: 59c9a1d57eca43ac864e18beddce7562
+prompts: null
+signature:
+  inputs: '[{"type": "long", "name": "V1", "required": true}, {"type": "string", "name":
+    "V2", "required": true}, {"type": "string", "name": "V3", "required": true}, {"type":
+    "string", "name": "V4", "required": true}, {"type": "string", "name": "V5", "required":
+    true}, {"type": "double", "name": "V6", "required": true}, {"type": "string",
+    "name": "V7", "required": true}, {"type": "string", "name": "V8", "required":
+    true}, {"type": "string", "name": "V9", "required": true}, {"type": "long", "name":
+    "V10", "required": true}, {"type": "string", "name": "V11", "required": true},
+    {"type": "double", "name": "V12", "required": true}, {"type": "long", "name":
+    "V13", "required": true}, {"type": "double", "name": "V14", "required": true},
+    {"type": "double", "name": "V15", "required": true}, {"type": "string", "name":
+    "V16", "required": true}]'
+  outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "int64", "shape": [-1]}}]'
+  params: null
+type_hint_from_example: false
+utc_time_created: '2025-09-07 18:16:19.579217'

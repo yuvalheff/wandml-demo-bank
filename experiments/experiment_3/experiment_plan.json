@@ -1,0 +1,136 @@
+{
+  "experiment_name": "Gradient Boosting with Probability Calibration",
+  "iteration": 3,
+  "objective": "Improve model probability estimates and maintain threshold optimization gains through probability calibration",
+  "key_change": "Add CalibratedClassifierCV with sigmoid method to improve probability reliability for threshold optimization",
+  
+  "preprocessing_steps": {
+    "categorical_encoding": {
+      "method": "LabelEncoder",
+      "columns": ["V2", "V3", "V4", "V5", "V7", "V8", "V9", "V11", "V16"],
+      "description": "Apply LabelEncoder to all 9 categorical features, converting string values to numerical representation"
+    },
+    "special_value_handling": {
+      "V14_missing_indicator": {
+        "create_column": "V14_is_missing",
+        "condition": "V14 == -1.0",
+        "data_type": "binary_integer",
+        "description": "Create binary indicator for V14 missing values encoded as -1.0"
+      },
+      "V15_zero_indicator": {
+        "create_column": "V15_is_zero", 
+        "condition": "V15 == 0.0",
+        "data_type": "binary_integer",
+        "description": "Create binary indicator for V15 zero values"
+      }
+    },
+    "outlier_handling": {
+      "column": "V6",
+      "method": "quantile_clipping",
+      "lower_quantile": 0.01,
+      "upper_quantile": 0.99,
+      "description": "Clip V6 values to 1st and 99th percentiles to handle extreme outliers (-8019 to 98417 range)"
+    }
+  },
+  
+  "feature_engineering_steps": {
+    "approach": "maintain_current_features",
+    "total_features": 18,
+    "feature_list": ["V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10", "V11", "V12", "V13", "V14", "V15", "V16", "V14_is_missing", "V15_is_zero"],
+    "description": "Keep existing 16 original features plus 2 engineered binary indicators. No additional feature engineering to isolate calibration impact."
+  },
+  
+  "model_selection_steps": {
+    "base_algorithm": "GradientBoostingClassifier",
+    "base_hyperparameters": {
+      "n_estimators": 200,
+      "max_depth": 5,
+      "learning_rate": 0.1,
+      "random_state": 42
+    },
+    "calibration_wrapper": {
+      "method": "CalibratedClassifierCV",
+      "calibration_method": "sigmoid",
+      "cv_folds": 3,
+      "description": "Wrap GradientBoostingClassifier with sigmoid calibration using 3-fold cross-validation"
+    },
+    "model_pipeline": "CalibratedClassifierCV(GradientBoostingClassifier(parameters), method='sigmoid', cv=3)",
+    "validation_strategy": {
+      "method": "StratifiedKFold",
+      "folds": 5,
+      "shuffle": true,
+      "random_state": 42
+    }
+  },
+  
+  "evaluation_strategy": {
+    "primary_metric": {
+      "name": "ROC-AUC",
+      "target": "> 0.932",
+      "description": "Area under ROC curve - maintain or improve current performance"
+    },
+    "threshold_optimization": {
+      "methods": ["f1_optimal", "precision_recall_optimal", "business_optimal"],
+      "threshold_range": [0.1, 0.9],
+      "step_size": 0.01,
+      "description": "Systematic threshold analysis to find optimal operating point"
+    },
+    "calibration_analysis": {
+      "metrics": ["brier_score", "calibration_curve", "reliability_diagram"],
+      "description": "Assess probability calibration quality and reliability improvement"
+    },
+    "comprehensive_metrics": [
+      "ROC-AUC",
+      "Average Precision",
+      "Brier Score", 
+      "F1-Score at optimal threshold",
+      "Recall at optimal threshold",
+      "Precision at optimal threshold",
+      "Accuracy at optimal threshold",
+      "Calibration metrics (reliability, sharpness)"
+    ],
+    "diagnostic_analysis": {
+      "probability_distribution_analysis": "Compare calibrated vs uncalibrated probability distributions",
+      "threshold_sensitivity_analysis": "Analyze performance stability across threshold range",  
+      "business_impact_assessment": "Quantify improvement in campaign targeting effectiveness",
+      "calibration_comparison": "Before/after calibration reliability assessment"
+    }
+  },
+  
+  "expected_outputs": {
+    "model_artifacts": {
+      "calibrated_model": "MLflow logged CalibratedClassifierCV model with proper signatures",
+      "base_model": "Underlying GradientBoostingClassifier for comparison",
+      "preprocessing_pipeline": "Complete preprocessing steps for production deployment"
+    },
+    "performance_reports": {
+      "calibration_analysis_plot": "Reliability diagrams and calibration curves",
+      "threshold_optimization_plot": "Precision-recall and threshold analysis curves", 
+      "roc_analysis_plot": "ROC curves comparing calibrated vs uncalibrated",
+      "probability_distribution_plot": "Histogram comparison of probability outputs",
+      "confusion_matrix_plot": "Performance at optimal threshold"
+    },
+    "business_insights": {
+      "campaign_improvement_metrics": "Quantified improvement in subscriber identification",
+      "calibration_reliability_assessment": "Statistical significance of calibration improvement",
+      "threshold_recommendation": "Optimal threshold for business deployment"
+    }
+  },
+  
+  "success_criteria": {
+    "primary": "Maintain ROC-AUC >= 0.932 while improving probability calibration",
+    "secondary": [
+      "Improve Brier Score (lower is better) compared to iteration 2",
+      "Better calibrated probabilities as shown by reliability diagrams", 
+      "Maintain or improve recall at optimal threshold (>= 74.7%)",
+      "Stable or improved business impact metrics"
+    ]
+  },
+  
+  "implementation_notes": {
+    "calibration_rationale": "Sigmoid calibration chosen based on exploration showing +0.0007 ROC-AUC improvement. Complements threshold optimization from iteration 2.",
+    "single_change_focus": "Only adding calibration wrapper to isolate its impact on probability reliability and threshold optimization effectiveness",
+    "computational_considerations": "CalibratedClassifierCV increases training time ~3x due to internal CV, but improves probability quality",
+    "production_deployment": "Calibrated model provides better probability estimates for real-time campaign decisions"
+  }
+}

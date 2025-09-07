@@ -1,6 +1,6 @@
 data_prep:
-  version: "2.0"
-  dataset_name: "bank_marketing_campaign_threshold_optimization"
+  version: "3.0"
+  dataset_name: "bank_marketing_campaign_probability_calibration"
   target_column: "target"
   categorical_columns: ["V2", "V3", "V4", "V5", "V7", "V8", "V9", "V11", "V16"]
   numerical_columns: ["V1", "V6", "V10", "V12", "V13", "V14", "V15"]
@@ -32,6 +32,9 @@ model:
     max_depth: 5
     n_estimators: 200
     random_state: 42
+    calibration_enabled: true
+    calibration_method: "sigmoid"
+    calibration_cv: 3
   hyperparameter_tuning:
     enabled: false
   baseline_model:
